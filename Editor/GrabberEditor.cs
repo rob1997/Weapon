@@ -29,8 +29,7 @@ namespace Editor.Weapon
                     "This is where items are placed in (re-parented to be grabbed)"));
 
             if (_docksFoldout)
-                BaseEditor.DrawEnumDict(serializedObject.FindProperty(nameof(grabber.Docks)), ref grabber.Docks,
-                    DrawTransform);
+                BaseEditor.DrawEnumDict<UsableSlotType, Transform>(serializedObject.FindProperty(nameof(grabber.Docks)), DrawTransform);
 
             _handsFoldout = EditorGUILayout.Foldout(_handsFoldout, Utils.GetDisplayName(nameof(grabber.Hands)));
 
@@ -77,8 +76,8 @@ namespace Editor.Weapon
 
                 EditorGUILayout.EndHorizontal();
 
-                BaseEditor.DrawEnumDict(handProperty.FindPropertyRelative(nameof(Grabber.Hand.Dependencies)),
-                    ref hand.Dependencies, DrawToggle);
+                BaseEditor.DrawEnumDict<UsableSlotType, bool>(handProperty
+                    .FindPropertyRelative(nameof(Grabber.Hand.Dependencies)), DrawToggle);
 
                 EditorGUILayout.EndVertical();
             }

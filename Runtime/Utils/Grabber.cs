@@ -14,6 +14,14 @@ namespace Weapon.Utils
     public class Grabber : MonoBehaviour
     {
         [Serializable]
+        public struct GrabTarget
+        {
+            [field: SerializeField] public UsableSlotType SlotType { get; private set; }
+            
+            [field: SerializeField] public Transform Target { get; private set; }
+        }
+        
+        [Serializable]
         public class Hand
         {
             [HideInInspector] public Transform Target;
@@ -38,28 +46,32 @@ namespace Weapon.Utils
             foreach (Hand hand in Hands.Where(h => h.Dependencies[slotType])) hand.Target = null;
         }
 
-        public void EquippedLeft(Transform left)
+        public void Equipped(UsableSlotType slotType, GrabTarget[] targets)
         {
-            Hand hand = Hands.FirstOrDefault(h => h.Dependencies[UsableSlotType.LeftHand]);
+            Hand[] hands = Hands.Where(h => h.Dependencies[slotType]).ToArray();
 
-            if (hand != null)
-                hand.Target = left;
+            if (hands.Length <= 0)
+            {
+                Debug.LogError($"No hands with {slotType} dependencies found");
+                
+                return;
+            }
 
-            else
-                Debug.LogError("Left Hand not found");
+            if (targets != null && targets.Length > 0)
+            {
+                foreach (GrabTarget target in targets)
+                {
+                    Hand hand = hands.FirstOrDefault(h => h.Dependencies[target.SlotType]);
+
+                    if (hand != null) hand.Target = target.Target;
+                    
+                    else Debug.LogError($"No hand with {target.SlotType} dependencies found");
+                }
+            }
+            
+            else Debug.LogError("NullOrEmpty targets");
         }
-
-        public void EquippedRight(Transform right)
-        {
-            Hand hand = Hands.FirstOrDefault(h => h.Dependencies[UsableSlotType.RightHand]);
-
-            if (hand != null)
-                hand.Target = right;
-
-            else
-                Debug.LogError("Right Hand not found");
-        }
-
+        
         public void UnEquip(UsableSlotType slotType)
         {
             foreach (Hand hand in Hands.Where(h => h.Dependencies[slotType])) hand.Target = null;
