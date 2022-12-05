@@ -238,10 +238,12 @@ namespace Weapon.Main
                 return;
             }
 
-            RaycastHit hit = hits[0];
+            RaycastHit hit = hits[0]; 
 
-            Destroy(Instantiate(Reference.HitObjPrefab, hit.point, Quaternion.LookRotation(hit.normal), hit.transform), 5f);
-
+            GameObject hitObj = Instantiate(Reference.HitObjPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+            
+            hitObj.transform.parent = hit.transform;
+            
             Vector3 hitDirection = (hit.point - _beamer.transform.position).normalized;
 
             if (hit.collider.TryGetComponent(out Rigidbody rBody))
@@ -249,6 +251,8 @@ namespace Weapon.Main
                 //multiply by mass because bullets are fast af
                 rBody.AddForceAtPosition(Reference.Power * hitDirection, hit.point);
             }
+            
+            Destroy(hitObj, 5f);
         }
         
         private void StopFiring()

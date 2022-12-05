@@ -39,12 +39,18 @@ namespace Editor.Weapon
         private void DrawTransform(SerializedProperty property)
         {
             EditorGUI.BeginChangeCheck();
+            
+            while (property.Next(true))
+            {
+                if (property.name == BaseEditor.ValueName)
+                {
+                    EditorGUILayout.PropertyField(property);
+                    
+                    break;
+                }
+            }
 
-            var pair = (GenericDictionary<UsableSlotType, Transform>.GenericPair) property.GetValue();
-
-            pair.Value = (Transform) EditorGUILayout.ObjectField("Parent", pair.Value, typeof(Transform), true);
-
-            if (EditorGUI.EndChangeCheck()) property.SetValue(pair);
+            if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
         }
 
         private void DrawHands(SerializedProperty handsProperty)
