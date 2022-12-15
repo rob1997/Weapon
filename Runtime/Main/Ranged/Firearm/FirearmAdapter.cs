@@ -27,6 +27,8 @@ namespace Weapon.Main
         
         [SerializeField] private Grabber.GrabTarget[] grabTargets;
         
+        [SerializeField] private BarrelGroup barrels;
+        
         private float _fireTime;
         
         private float _cooldownTime;
@@ -40,8 +42,6 @@ namespace Weapon.Main
         private Transform _dock;
         
         private Transform _cachedParent;
-
-        private Beamer _beamer;
 
         private Grabber _grabber;
         
@@ -63,8 +63,6 @@ namespace Weapon.Main
 
             TryGetGrabber();
             
-            _beamer = Character.Beamer;
-            
             AddUsage(Fire);
             
             AddUsage(_cameraManager.ZoomIn, UsageType.Secondary);
@@ -72,6 +70,9 @@ namespace Weapon.Main
             AddStoppage(StopFiring);
             
             AddStoppage(_cameraManager.ZoomOut, UsageType.Secondary);
+            
+            //set origin to shoulder beamer
+            barrels.SetOrigin(Character.Beamer.transform);
         }
 
         private void TryGetCameraManager()
@@ -212,6 +213,10 @@ namespace Weapon.Main
         
         private void Fire()
         {
+            if (_resetRecoilCoroutine != null) StopCoroutine(_resetRecoilCoroutine);
+
+            _resetRecoilCoroutine = null;
+            
             CanUse[UsageType.Primary] = false;
 
             _fireDuration = Reference.FireDuration;
@@ -231,28 +236,7 @@ namespace Weapon.Main
 
             _cameraManager.Gain(GetRecoilGain(), Reference.TotalDuration);
 
-            RaycastHit[] hits = _beamer.Beam();
-
-            if (hits == null || hits.Length == 0)
-            {
-                return;
-            }
-
-            RaycastHit hit = hits[0]; 
-
-            GameObject hitObj = Instantiate(Reference.HitObjPrefab, hit.point, Quaternion.LookRotation(hit.normal));
-            
-            hitObj.transform.parent = hit.transform;
-            
-            Vector3 hitDirection = (hit.point - _beamer.transform.position).normalized;
-
-            if (hit.collider.TryGetComponent(out Rigidbody rBody))
-            {
-                //multiply by mass because bullets are fast af
-                rBody.AddForceAtPosition(Reference.Power * hitDirection, hit.point);
-            }
-            
-            Destroy(hitObj, 5f);
+            barrels.Fire();
         }
         
         private void StopFiring()
@@ -262,6 +246,8 @@ namespace Weapon.Main
             if (_resetRecoilCoroutine != null) StopCoroutine(_resetRecoilCoroutine);
 
             _resetRecoilCoroutine = StartCoroutine(ResetRecoilIndex());
+            
+            barrels.StopFiring();
         }
 
         private IEnumerator ResetRecoilIndex()
@@ -269,6 +255,8 @@ namespace Weapon.Main
             yield return new WaitForSeconds(Reference.RecoilPatternTimeout);
 
             _recoilIndex = 0;
+
+            _resetRecoilCoroutine = null;
         }
 
         private Vector2 GetRecoilGain()

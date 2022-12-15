@@ -8,8 +8,6 @@ namespace Weapon.Main
     [CreateAssetMenu(order = 0, fileName = nameof(Firearm), menuName = "Inventory/Firearm")]
     public class FirearmReference : RangedWeaponReference
     {
-        [field: SerializeField] public float Power { get; private set; }
-        
         [field: Space]
         
         [field: Header("Recoil")]
@@ -43,8 +41,6 @@ namespace Weapon.Main
         [field: Header("Other")]
         
         [field: SerializeField] public Vector3 CameraShake { get; private set; }
-        
-        [field: SerializeField] public GameObject HitObjPrefab { get; private set; }
 
         public float TotalDuration => FireDuration + CooldownDuration;
     }
